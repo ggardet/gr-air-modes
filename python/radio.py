@@ -107,6 +107,8 @@ class modes_radio (gr.top_block, pubsub):
                       help="set receive frequency in Hz [default=%default]", metavar="FREQ")
     group.add_option("-g", "--gain", type="int", default=None,
                       help="set RF gain", metavar="dB")
+    group.add_option("-G", "--gains", type="string", default=None,
+		      help="Set named gain in dB, name:gain,name:gain,...")
 
     #RX path args
     group.add_option("-r", "--rate", type="eng_float", default=4e6,
@@ -192,6 +194,14 @@ class modes_radio (gr.top_block, pubsub):
       self._u.set_gain(options.gain)
       print "Gain is %i" % self._u.get_gain()
 
+
+      if options.gains:
+            for tuple in options.gains.split(","):
+                name, gain = tuple.split(":")
+                gain = int(gain)
+                print "Setting gain %s to %d." % (name, gain)
+                self._u.set_gain(gain, name)
+
     #TODO: detect if you're using an RTLSDR or Jawbreaker
     #and set up accordingly.
     elif options.source == "osmocom": #RTLSDR dongle or HackRF Jawbreaker
@@ -207,6 +217,14 @@ class modes_radio (gr.top_block, pubsub):
             options.gain = 34
         self._u.set_gain(options.gain)
         print "Gain is %i" % self._u.get_gain()
+
+	# GGA: test for IF and BB gains for HackRF and more
+      	if options.gains:
+            for tuple in options.gains.split(","):
+                name, gain = tuple.split(":")
+                gain = int(gain)
+                print "Setting gain %s to %d." % (name, gain)
+                self._u.set_gain(gain, name)
 
         #Note: this should only come into play if using an RTLSDR.
 #        lpfiltcoeffs = gr.firdes.low_pass(1, 5*3.2e6, 1.6e6, 300e3)
